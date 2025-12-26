@@ -28,13 +28,17 @@ request.interceptors.response.use(
   },
   error => {
     if (error.response) {
+      const status = error.response.status
       const message = error.response.data.message || '请求失败'
-      ElMessage.error(message)
 
-      if (error.response.status === 401) {
+      // 401未授权或403禁止访问，都清除token并跳转登录
+      if (status === 401 || status === 403) {
+        ElMessage.error('认证失败，请重新登录')
         const userStore = useUserStore()
         userStore.logout()
         window.location.href = '/login'
+      } else {
+        ElMessage.error(message)
       }
     } else {
       ElMessage.error('网络错误')

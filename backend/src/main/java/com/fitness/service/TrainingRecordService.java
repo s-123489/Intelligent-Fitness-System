@@ -35,16 +35,17 @@ public class TrainingRecordService {
 
     public Map<String, Object> getStats(Long userId) {
         List<TrainingRecord> records = trainingRecordRepository.findByUserId(userId);
-        
+
+        // 构建前端期望的数据格式
+        Map<String, Object> total = new HashMap<>();
+        total.put("count", records.size());
+        total.put("total_duration", records.stream().mapToInt(r -> r.getDuration() != null ? r.getDuration() : 0).sum());
+        total.put("total_calories", records.stream().mapToDouble(r -> r.getCalories() != null ? r.getCalories() : 0).sum());
+
         Map<String, Object> stats = new HashMap<>();
-        stats.put("totalRecords", records.size());
-        stats.put("totalDuration", records.stream().mapToInt(r -> r.getDuration() != null ? r.getDuration() : 0).sum());
-        stats.put("totalCalories", records.stream().mapToDouble(r -> r.getCalories() != null ? r.getCalories() : 0).sum());
-        
-        // 计算连续打卡天数
-        int streak = calculateStreak(records);
-        stats.put("streak", streak);
-        
+        stats.put("total", total);
+        stats.put("daily_stats", records); // 前端可能需要每日数据
+
         return stats;
     }
 

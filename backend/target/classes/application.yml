@@ -4,8 +4,8 @@ spring:
 
   # 数据源配置
   datasource:
-    # 使用H2内存数据库（开发测试）
-    url: jdbc:h2:mem:fitnessdb
+    # 使用H2文件数据库（数据持久化）
+    url: jdbc:h2:file:./data/fitnessdb
     driver-class-name: org.h2.Driver
     username: sa
     password:

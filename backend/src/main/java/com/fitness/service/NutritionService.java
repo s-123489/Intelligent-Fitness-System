@@ -20,24 +20,23 @@ public class NutritionService {
     public Map<String, Object> getRecommendation(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
-        
-        if (user.getAge() == null || user.getHeight() == null) {
-            throw new RuntimeException("请先完善个人资料（年龄、身高）");
-        }
-        
-        // 假设体重，如果没有可以从body_data表获取最新的
-        double weight = 70.0; // 默认值
-        
+
+        // 使用默认值，避免用户未完善资料时出错
+        int age = user.getAge() != null ? user.getAge() : 25;
+        double height = user.getHeight() != null ? user.getHeight() : 170.0;
+        String gender = user.getGender() != null ? user.getGender() : "男";
+        double weight = 70.0; // 默认体重
+
         // 计算BMR（基础代谢率）
-        double bmr = calculateBMR(user.getGender(), weight, user.getHeight(), user.getAge());
-        
+        double bmr = calculateBMR(gender, weight, height, age);
+
         // 计算总热量消耗（TDEE）考虑活动系数
         double tdee = bmr * 1.5; // 中等活动水平
-        
+
         // 根据目标调整热量
         double targetCalories = tdee;
         String goal = "保持"; // 默认目标
-        
+
         Map<String, Object> recommendation = new HashMap<>();
         recommendation.put("calories", Math.round(targetCalories));
         recommendation.put("protein", Math.round(weight * 1.6)); // 每公斤体重1.6g蛋白质
@@ -45,7 +44,7 @@ public class NutritionService {
         recommendation.put("fat", Math.round(targetCalories * 0.25 / 9)); // 25%来自脂肪，1g脂肪=9卡
         recommendation.put("water", Math.round(weight * 35)); // 每公斤体重35ml水
         recommendation.put("meals", generateMealPlan(goal));
-        
+
         return recommendation;
     }
 

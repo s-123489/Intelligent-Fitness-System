@@ -16,6 +16,8 @@ import java.util.Map;
 @Repository
 public interface TrainingRecordRepository extends JpaRepository<TrainingRecord, Long> {
 
+    List<TrainingRecord> findByUserId(Long userId);
+
     List<TrainingRecord> findByUserIdOrderByRecordDateDesc(Long userId);
 
     List<TrainingRecord> findByUserIdAndRecordDateAfterOrderByRecordDateDesc(Long userId, LocalDate date);

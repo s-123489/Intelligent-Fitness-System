@@ -123,8 +123,13 @@ def token_required(f):
                 token = token[7:]
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
             current_user_id = data['user_id']
-        except:
+        except jwt.ExpiredSignatureError:
+            return jsonify({'message': '认证令牌已过期，请重新登录'}), 401
+        except jwt.InvalidTokenError:
             return jsonify({'message': '无效的认证令牌'}), 401
+        except Exception as e:
+            print(f'Token验证错误: {str(e)}')
+            return jsonify({'message': '认证失败'}), 401
 
         return f(current_user_id, *args, **kwargs)
 
@@ -133,18 +138,25 @@ def token_required(f):
 # 用户注册
 @app.route('/api/register', methods=['POST'])
 def register():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-    email = data.get('email')
-
-    if not username or not password:
-        return jsonify({'message': '用户名和密码不能为空'}), 400
-
-    # 密码加密
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()
-
     try:
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+        email = data.get('email')
+
+        # 参数验证
+        if not username or not password:
+            return jsonify({'message': '用户名和密码不能为空'}), 400
+
+        if len(username) < 3 or len(username) > 20:
+            return jsonify({'message': '用户名长度应为3-20个字符'}), 400
+
+        if len(password) < 6:
+            return jsonify({'message': '密码长度不能少于6个字符'}), 400
+
+        # 密码加密
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
         conn = sqlite3.connect('fitness.db')
         c = conn.cursor()
         c.execute('INSERT INTO users (username, password, email) VALUES (?, ?, ?)',
@@ -156,36 +168,46 @@ def register():
         return jsonify({'message': '注册成功', 'user_id': user_id}), 201
     except sqlite3.IntegrityError:
         return jsonify({'message': '用户名已存在'}), 400
+    except Exception as e:
+        print(f'注册错误: {str(e)}')
+        return jsonify({'message': '注册失败，请稍后重试'}), 500
 
 # 用户登录
 @app.route('/api/login', methods=['POST'])
 def login():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
+    try:
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
 
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        if not username or not password:
+            return jsonify({'message': '用户名和密码不能为空'}), 400
 
-    conn = sqlite3.connect('fitness.db')
-    c = conn.cursor()
-    c.execute('SELECT id, username FROM users WHERE username = ? AND password = ?',
-              (username, hashed_password))
-    user = c.fetchone()
-    conn.close()
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
 
-    if user:
-        token = jwt.encode({
-            'user_id': user[0],
-            'exp': datetime.utcnow() + timedelta(days=7)
-        }, app.config['SECRET_KEY'], algorithm="HS256")
+        conn = sqlite3.connect('fitness.db')
+        c = conn.cursor()
+        c.execute('SELECT id, username FROM users WHERE username = ? AND password = ?',
+                  (username, hashed_password))
+        user = c.fetchone()
+        conn.close()
 
-        return jsonify({
-            'message': '登录成功',
-            'token': token,
-            'user': {'id': user[0], 'username': user[1]}
-        }), 200
-    else:
-        return jsonify({'message': '用户名或密码错误'}), 401
+        if user:
+            token = jwt.encode({
+                'user_id': user[0],
+                'exp': datetime.utcnow() + timedelta(days=7)
+            }, app.config['SECRET_KEY'], algorithm="HS256")
+
+            return jsonify({
+                'message': '登录成功',
+                'token': token,
+                'user': {'id': user[0], 'username': user[1]}
+            }), 200
+        else:
+            return jsonify({'message': '用户名或密码错误'}), 401
+    except Exception as e:
+        print(f'登录错误: {str(e)}')
+        return jsonify({'message': '登录失败，请稍后重试'}), 500
 
 # 获取用户信息
 @app.route('/api/user/profile', methods=['GET'])
@@ -231,28 +253,48 @@ def update_profile(current_user_id):
 @app.route('/api/body-data', methods=['POST'])
 @token_required
 def add_body_data(current_user_id):
-    data = request.json
-    weight = data.get('weight')
-    body_fat = data.get('body_fat')
-    record_date = data.get('record_date', datetime.now().strftime('%Y-%m-%d'))
+    try:
+        data = request.json
+        weight = data.get('weight')
+        body_fat = data.get('body_fat')
+        record_date = data.get('record_date', datetime.now().strftime('%Y-%m-%d'))
 
-    # 计算BMI (需要身高)
-    conn = sqlite3.connect('fitness.db')
-    c = conn.cursor()
-    c.execute('SELECT height FROM users WHERE id = ?', (current_user_id,))
-    height = c.fetchone()[0]
+        # 参数验证
+        if not weight or not body_fat:
+            return jsonify({'message': '体重和体脂率不能为空'}), 400
 
-    bmi = None
-    if height and weight:
-        bmi = round(weight / ((height / 100) ** 2), 2)
+        if weight <= 0 or weight > 500:
+            return jsonify({'message': '体重数据不合理'}), 400
 
-    c.execute('''INSERT INTO body_data (user_id, weight, body_fat, bmi, record_date)
-                 VALUES (?, ?, ?, ?, ?)''',
-              (current_user_id, weight, body_fat, bmi, record_date))
-    conn.commit()
-    conn.close()
+        if body_fat < 0 or body_fat > 100:
+            return jsonify({'message': '体脂率数据不合理'}), 400
 
-    return jsonify({'message': '身体数据添加成功', 'bmi': bmi}), 201
+        # 计算BMI (需要身高)
+        conn = sqlite3.connect('fitness.db')
+        c = conn.cursor()
+        c.execute('SELECT height FROM users WHERE id = ?', (current_user_id,))
+        user_data = c.fetchone()
+
+        if not user_data:
+            conn.close()
+            return jsonify({'message': '用户不存在'}), 404
+
+        height = user_data[0]
+
+        bmi = None
+        if height and weight:
+            bmi = round(weight / ((height / 100) ** 2), 2)
+
+        c.execute('''INSERT INTO body_data (user_id, weight, body_fat, bmi, record_date)
+                     VALUES (?, ?, ?, ?, ?)''',
+                  (current_user_id, weight, body_fat, bmi, record_date))
+        conn.commit()
+        conn.close()
+
+        return jsonify({'message': '身体数据添加成功', 'bmi': bmi}), 201
+    except Exception as e:
+        print(f'添加身体数据错误: {str(e)}')
+        return jsonify({'message': '添加失败，请稍后重试'}), 500
 
 # 获取身体数据历史
 @app.route('/api/body-data', methods=['GET'])

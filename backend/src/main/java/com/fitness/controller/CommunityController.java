@@ -2,6 +2,7 @@ package com.fitness.controller;
 
 import com.fitness.dto.ApiResponse;
 import com.fitness.entity.CommunityPost;
+import com.fitness.entity.PostComment;
 import com.fitness.service.CommunityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -44,5 +45,23 @@ public class CommunityController {
     public ResponseEntity<ApiResponse<Void>> deletePost(@PathVariable Long id) {
         communityService.deletePost(id);
         return ResponseEntity.ok(ApiResponse.success("删除成功"));
+    }
+
+    @GetMapping("/posts/{postId}/comments")
+    public ResponseEntity<List<PostComment>> getComments(@PathVariable Long postId) {
+        List<PostComment> comments = communityService.getComments(postId);
+        return ResponseEntity.ok(comments);
+    }
+
+    @PostMapping("/posts/{postId}/comments")
+    public ResponseEntity<ApiResponse<PostComment>> addComment(@PathVariable Long postId,
+                                                                 @RequestBody PostComment comment,
+                                                                 Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getPrincipal().toString());
+        comment.setUserId(userId);
+        comment.setPostId(postId);
+
+        PostComment saved = communityService.addComment(comment);
+        return ResponseEntity.ok(ApiResponse.success("评论成功", saved));
     }
 }

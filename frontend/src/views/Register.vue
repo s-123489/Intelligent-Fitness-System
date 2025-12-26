@@ -143,14 +143,21 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { register } from '@/api'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const formRef = ref(null)
 const loading = ref(false)
+
+// 进入注册页时清除旧的认证信息
+onMounted(() => {
+  userStore.logout()
+})
 
 const registerForm = reactive({
   username: '',

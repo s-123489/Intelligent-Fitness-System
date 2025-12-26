@@ -174,17 +174,50 @@ onMounted(() => {
 <style scoped>
 .plans {
   width: 100%;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .plan-card {
   margin-bottom: 20px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.plan-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.plan-card:hover::before {
+  transform: scaleX(1);
 }
 
 .plan-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(102, 126, 234, 0.25);
 }
 
 .plan-header {
@@ -195,32 +228,81 @@ onMounted(() => {
 
 .plan-name {
   font-weight: bold;
-  font-size: 16px;
+  font-size: 17px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .plan-content {
-  padding: 10px 0;
+  padding: 15px 0;
 }
 
 .plan-info {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 12px;
   color: #606266;
   font-size: 14px;
+  padding: 8px 12px;
+  background: #f5f7fa;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.plan-info:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
 }
 
 .plan-desc {
   margin: 15px 0;
-  color: #909399;
+  color: #606266;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.8;
+  padding: 12px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+  border-left: 3px solid #667eea;
+  border-radius: 4px;
 }
 
 .plan-date {
   font-size: 12px;
   color: #c0c4cc;
-  margin-top: 10px;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #ebeef5;
+}
+
+:deep(.el-card) {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-card:hover) {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+:deep(.el-button) {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-button:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+}
+
+:deep(.el-dialog) {
+  border-radius: 12px;
+}
+
+:deep(.el-tag) {
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 4px 12px;
 }
 </style>

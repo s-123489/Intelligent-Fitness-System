@@ -5,7 +5,7 @@ import com.fitness.dto.LoginRequest;
 import com.fitness.dto.LoginResponse;
 import com.fitness.dto.RegisterRequest;
 import com.fitness.service.AuthService;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,6 @@
 package com.fitness.dto;
 
-import jakarta.validation.constraints.*;
+import javax.validation.constraints.*;
 import lombok.Data;
 
 /**

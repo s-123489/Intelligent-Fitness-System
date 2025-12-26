@@ -244,26 +244,69 @@ onMounted(() => {
 <style scoped>
 .dashboard {
   width: 100%;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .stat-card {
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #409eff, #67c23a, #e6a23c, #f56c6c);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover::before {
+  transform: scaleX(1);
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(64, 158, 255, 0.2);
 }
 
 .stat-content {
   display: flex;
   align-items: center;
   gap: 20px;
+  padding: 10px;
 }
 
 .stat-icon {
   font-size: 48px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .stat-info {
@@ -271,15 +314,20 @@ onMounted(() => {
 }
 
 .stat-value {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: bold;
   color: #303133;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .stat-label {
   font-size: 14px;
   color: #909399;
+  font-weight: 500;
 }
 
 .card-header {
@@ -287,9 +335,38 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   font-weight: bold;
+  font-size: 16px;
 }
 
 .quick-actions {
   padding: 10px 0;
+}
+
+.quick-actions :deep(.el-button) {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.quick-actions :deep(.el-button:hover) {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.el-card) {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-card:hover) {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.el-table) {
+  border-radius: 8px;
+}
+
+:deep(.el-table__header-wrapper) {
+  border-radius: 8px 8px 0 0;
 }
 </style>

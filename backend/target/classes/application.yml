@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: fitness-system
+
+  # 数据源配置
+  datasource:
+    # 使用H2内存数据库（开发测试）
+    url: jdbc:h2:mem:fitnessdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+    # 如果要使用MySQL，取消下面的注释并注释掉H2配置
+    # url: jdbc:mysql://localhost:3306/fitness?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    # driver-class-name: com.mysql.cj.jdbc.Driver
+    # username: root
+    # password: your_password
+
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+        # 如果使用MySQL，使用这个dialect
+        # dialect: org.hibernate.dialect.MySQL8Dialect
+
+  # H2控制台（开发用）
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # JSON配置
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+
+# 服务器配置
+server:
+  port: 5000
+  servlet:
+    context-path: /api
+
+# JWT配置
+jwt:
+  secret: your-secret-key-change-this-in-production-at-least-256-bits
+  expiration: 604800000 # 7天（毫秒）
+
+# 日志配置
+logging:
+  level:
+    com.fitness: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG

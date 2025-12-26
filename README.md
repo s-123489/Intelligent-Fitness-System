@@ -23,23 +23,26 @@
 - **HTTP客户端**: Axios
 
 ### 后端技术
-- **语言**: Python 3.8+
-- **框架**: Flask
-- **数据库**: SQLite
-- **认证**: JWT (JSON Web Token)
-- **跨域**: Flask-CORS
+- **语言**: Java 17
+- **框架**: Spring Boot 3.2.0
+- **安全**: Spring Security
+- **数据持久化**: Spring Data JPA
+- **数据库**: H2 Database (可切换MySQL)
+- **认证**: JWT (jjwt 0.12.3)
+- **密码加密**: BCrypt
+- **项目管理**: Maven
 
 ### 数据库设计
 
 #### 用户表 (users)
-- id: 主键
-- username: 用户名
-- password: 密码（SHA256加密）
+- id: 主键 (BIGINT)
+- username: 用户名 (UNIQUE)
+- password: 密码（BCrypt加密）
 - email: 邮箱
 - gender: 性别
 - age: 年龄
-- height: 身高
-- created_at: 创建时间
+- height: 身高(cm)
+- created_at: 创建时间 (自动生成)
 
 #### 身体数据表 (body_data)
 - id: 主键
@@ -167,10 +170,11 @@
 **技术难点**: 前后端分离架构下的用户认证
 
 **解决方案**:
-- 使用JWT生成和验证令牌
-- 前端在请求头中携带token
-- 后端装饰器验证token有效性
-- token过期自动跳转登录
+- 使用jjwt库生成和验证JWT令牌
+- Spring Security Filter拦截请求验证token
+- 前端在Authorization请求头中携带Bearer Token
+- Token有效期7天，过期自动跳转登录
+- 使用HMAC-SHA256签名算法保证安全性
 
 ### 2. AI健身计划生成算法
 **技术难点**: 如何根据用户数据生成科学的健身计划
@@ -195,44 +199,71 @@
 **技术难点**: 前后端分离导致的跨域请求
 
 **解决方案**:
-- 后端使用Flask-CORS处理跨域
-- 前端Vite配置代理转发
+- Spring Security中配置CORS策略
+- 允许特定源（http://localhost:5173）的跨域请求
+- 支持GET、POST、PUT、DELETE等HTTP方法
+- 允许携带认证信息（credentials）
 - 生产环境使用Nginx反向代理
 
 ### 5. 密码安全
 **技术难点**: 用户密码的安全存储
 
 **解决方案**:
-- 使用SHA256哈希加密
+- 使用BCrypt密码加密（比SHA256更安全）
+- 自动加盐（salt）防止彩虹表攻击
 - 密码不可逆加密存储
-- 登录时对比哈希值
+- 登录时使用BCrypt的matches方法验证
+- 符合企业级安全标准
 
 ## 项目结构
 
 ```
 大作业/
-├── backend/              # 后端代码
-│   ├── app.py           # Flask主程序
-│   ├── requirements.txt # Python依赖
-│   ├── fitness.db       # SQLite数据库（运行后自动生成）
-│   └── README.md        # 后端说明
-├── frontend/            # 前端代码
+├── backend/                                 # Java后端
+│   ├── src/main/java/com/fitness/
+│   │   ├── FitnessApplication.java         # 主应用类
+│   │   ├── config/                         # 配置类
+│   │   │   └── SecurityConfig.java         # Spring Security配置
+│   │   ├── controller/                     # 控制器层
+│   │   │   ├── AuthController.java         # 认证API
+│   │   │   ├── UserController.java         # 用户API
+│   │   │   └── BodyDataController.java     # 身体数据API
+│   │   ├── dto/                           # 数据传输对象
+│   │   ├── entity/                        # JPA实体类
+│   │   ├── repository/                    # 数据访问层
+│   │   ├── service/                       # 业务逻辑层
+│   │   ├── security/                      # 安全认证
+│   │   └── util/                          # 工具类
+│   ├── src/main/resources/
+│   │   └── application.yml                # 配置文件
+│   ├── pom.xml                            # Maven依赖
+│   ├── mvnw & mvnw.cmd                    # Maven Wrapper
+│   └── README.md                          # 后端详细说明
+├── frontend/                              # Vue前端
 │   ├── src/
-│   │   ├── api/        # API接口
-│   │   ├── router/     # 路由配置
-│   │   ├── stores/     # 状态管理
-│   │   ├── utils/      # 工具函数
-│   │   ├── views/      # 页面组件
-│   │   ├── App.vue     # 根组件
-│   │   └── main.js     # 入口文件
-│   ├── index.html
-│   ├── package.json
-│   ├── vite.config.js
-│   └── README.md       # 前端说明
-└── README.md           # 项目总说明
+│   │   ├── api/                          # API接口
+│   │   ├── router/                       # 路由配置
+│   │   ├── stores/                       # Pinia状态管理
+│   │   ├── utils/                        # 工具函数
+│   │   ├── views/                        # 页面组件
+│   │   ├── App.vue                       # 根组件
+│   │   └── main.js                       # 入口文件
+│   ├── package.json                      # NPM依赖
+│   └── vite.config.js                    # Vite配置
+└── README.md                             # 项目总说明
 ```
 
 ## 快速开始
+
+### 环境要求
+
+**后端**:
+- JDK 17 或更高版本
+- Maven 3.6+ (或使用项目自带的Maven Wrapper)
+
+**前端**:
+- Node.js 14+
+- npm 或 yarn
 
 ### 后端启动
 
@@ -240,14 +271,26 @@
 # 进入后端目录
 cd backend
 
-# 安装依赖
-pip install -r requirements.txt
+# 使用Maven Wrapper运行（推荐，无需安装Maven）
+# Windows:
+mvnw.cmd spring-boot:run
 
-# 运行后端服务
-python app.py
+# Linux/Mac:
+./mvnw spring-boot:run
+
+# 或者先打包再运行
+mvnw.cmd clean package
+java -jar target/fitness-system-1.0.0.jar
 ```
 
-后端服务将在 http://localhost:5000 运行
+**启动成功后显示**:
+```
+========================================
+智能健身管理系统启动成功！
+API地址: http://localhost:5000/api
+H2控制台: http://localhost:5000/api/h2-console
+========================================
+```
 
 ### 前端启动
 
@@ -262,7 +305,7 @@ npm install
 npm run dev
 ```
 
-前端应用将在 http://localhost:3000 运行
+前端应用将在 http://localhost:5173 运行
 
 ## 使用说明
 
@@ -281,10 +324,11 @@ npm run dev
 
 ### 成员1: [姓名]
 - 后端开发（50%）
-  - Flask框架搭建
-  - 数据库设计与实现
-  - API接口开发
-  - JWT认证实现
+  - Spring Boot框架搭建
+  - 数据库设计与JPA实体类实现
+  - RESTful API接口开发
+  - Spring Security + JWT认证实现
+  - BCrypt密码加密
 - 前端开发（20%）
   - 用户认证页面
   - 个人资料页面
@@ -295,8 +339,9 @@ npm run dev
 - 前端开发（60%）
   - Vue3项目搭建
   - 页面组件开发
-  - 路由和状态管理
+  - Pinia状态管理
   - ECharts图表集成
+  - 响应式布局和UI优化
 - AI算法设计（20%）
   - 健身计划推荐算法
   - 营养建议算法

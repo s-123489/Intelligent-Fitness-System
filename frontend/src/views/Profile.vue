@@ -144,6 +144,105 @@ onMounted(() => {
 <style scoped>
 .profile {
   width: 100%;
-  max-width: 800px;
+  max-width: 900px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+:deep(.el-card) {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+}
+
+:deep(.el-card:hover) {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+:deep(.el-card__header) {
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+  font-weight: 600;
+  font-size: 16px;
+  border-bottom: 2px solid #667eea;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 25px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #606266;
+}
+
+:deep(.el-input__wrapper) {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-input__wrapper:hover) {
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+:deep(.el-button) {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-button:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+}
+
+:deep(.el-descriptions) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:deep(.el-descriptions__label) {
+  font-weight: 600;
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+}
+
+:deep(.el-descriptions__content) {
+  color: #303133;
+  font-weight: 500;
+}
+
+:deep(.el-radio-group) {
+  display: flex;
+  gap: 20px;
+}
+
+:deep(.el-radio) {
+  margin-right: 0;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-radio:hover) {
+  background: #f5f7fa;
+}
+
+:deep(.el-input-number) {
+  border-radius: 8px;
 }
 </style>

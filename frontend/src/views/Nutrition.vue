@@ -180,19 +180,61 @@ onMounted(() => {
 <style scoped>
 .nutrition {
   width: 100%;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .nutrition-card {
   display: flex;
   align-items: center;
   gap: 15px;
-  padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 8px;
+  padding: 25px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.nutrition-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #667eea, #764ba2);
+  transition: width 0.3s ease;
+}
+
+.nutrition-card:hover::before {
+  width: 100%;
+  opacity: 0.1;
+}
+
+.nutrition-card:hover {
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .nutrition-icon {
   flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.nutrition-card:hover .nutrition-icon {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .nutrition-info {
@@ -200,39 +242,114 @@ onMounted(() => {
 }
 
 .nutrition-value {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
   color: #303133;
   margin-bottom: 5px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .nutrition-label {
   font-size: 14px;
   color: #606266;
+  font-weight: 500;
 }
 
 .water-recommendation {
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 20px;
+  padding: 30px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 8px;
+  border-radius: 12px;
   height: 200px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.water-recommendation::before {
+  content: '';
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  top: -100px;
+  right: -100px;
+  animation: float 6s infinite ease-in-out;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-20px, 20px);
+  }
+}
+
+.water-recommendation:hover {
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+  transform: translateY(-3px);
 }
 
 .water-info {
   flex: 1;
   color: #fff;
+  position: relative;
+  z-index: 1;
 }
 
 .water-value {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: bold;
   margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .water-label {
   font-size: 16px;
+  opacity: 0.95;
+}
+
+:deep(.el-card) {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+:deep(.el-card:hover) {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+:deep(.el-card__header) {
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+:deep(.el-timeline-item__card) {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-timeline-item__card:hover) {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.el-button) {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-button:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
 }
 </style>

@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * 用户Controller
  */
@@ -45,6 +47,31 @@ public class UserController {
             Long userId = (Long) authentication.getPrincipal();
             userService.updateUserProfile(userId, updateData);
             return ResponseEntity.ok(ApiResponse.success("更新成功"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    /**
+     * 修改密码
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            Authentication authentication,
+            @RequestBody Map<String, String> passwordData) {
+        try {
+            Long userId = (Long) authentication.getPrincipal();
+            String oldPassword = passwordData.get("oldPassword");
+            String newPassword = passwordData.get("newPassword");
+
+            if (oldPassword == null || newPassword == null) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("旧密码和新密码不能为空"));
+            }
+
+            userService.changePassword(userId, oldPassword, newPassword);
+            return ResponseEntity.ok(ApiResponse.success("密码修改成功"));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(e.getMessage()));

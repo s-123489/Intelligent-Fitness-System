@@ -1,6 +1,7 @@
 package com.fitness.entity;
 
 import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,12 +26,14 @@ public class CommunityPost {
     private Long id;
 
     @Column(nullable = false)
+    @JsonProperty("user_id")
     private Long userId;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(length = 500)
+    @JsonProperty("image_url")
     private String imageUrl;
 
     @Column(nullable = false)
@@ -38,5 +41,6 @@ public class CommunityPost {
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
+    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 }

@@ -177,9 +177,25 @@ const renderChart = (dailyStats) => {
 
   const chart = echarts.init(trainingChartRef.value)
 
-  const dates = dailyStats.map(s => s.date)
-  const durations = dailyStats.map(s => s.duration)
-  const calories = dailyStats.map(s => s.calories)
+  // 聚合同一天的训练数据
+  const aggregatedData = {}
+  dailyStats.forEach(record => {
+    const date = record.record_date
+    if (!aggregatedData[date]) {
+      aggregatedData[date] = {
+        duration: 0,
+        calories: 0
+      }
+    }
+    aggregatedData[date].duration += record.duration || 0
+    aggregatedData[date].calories += record.calories || 0
+  })
+
+  // 按日期排序
+  const sortedDates = Object.keys(aggregatedData).sort()
+  const dates = sortedDates
+  const durations = sortedDates.map(date => aggregatedData[date].duration)
+  const calories = sortedDates.map(date => Math.round(aggregatedData[date].calories))
 
   const option = {
     tooltip: {
@@ -193,7 +209,11 @@ const renderChart = (dailyStats) => {
     },
     xAxis: {
       type: 'category',
-      data: dates
+      data: dates,
+      axisLabel: {
+        rotate: 45,
+        interval: 0
+      }
     },
     yAxis: [
       {
@@ -207,6 +227,9 @@ const renderChart = (dailyStats) => {
         position: 'right'
       }
     ],
+    grid: {
+      bottom: 80
+    },
     series: [
       {
         name: '训练时长(分钟)',

@@ -1,6 +1,7 @@
 package com.fitness.entity;
 
 import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,9 +26,11 @@ public class FitnessPlan {
     private Long id;
 
     @Column(nullable = false)
+    @JsonProperty("user_id")
     private Long userId;
 
     @Column(nullable = false, length = 100)
+    @JsonProperty("plan_name")
     private String planName;
 
     @Column(length = 50)
@@ -42,11 +45,14 @@ public class FitnessPlan {
     private String description;
 
     @Column(columnDefinition = "TEXT")
+    @JsonProperty("plan_content")
     private String planContent;
 
+    @JsonProperty("is_ai_generated")
     private Boolean isAiGenerated;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
+    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 }

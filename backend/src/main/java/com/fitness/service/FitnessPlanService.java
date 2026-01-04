@@ -22,6 +22,11 @@ public class FitnessPlanService {
         return fitnessPlanRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
+    public FitnessPlan getPlanById(Long id) {
+        return fitnessPlanRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("计划不存在"));
+    }
+
     public FitnessPlan savePlan(FitnessPlan plan) {
         return fitnessPlanRepository.save(plan);
     }
@@ -35,12 +40,12 @@ public class FitnessPlanService {
      */
     public FitnessPlan generateAIPlan(Long userId, String goal, Double bodyFat, Double bmi) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("用户不存在"));
-        
+
         FitnessPlan plan = new FitnessPlan();
         plan.setUserId(userId);
         plan.setGoal(goal);
         plan.setIsAiGenerated(true);
-        
+
         // 根据目标设置计划名称和难度
         switch (goal) {
             case "减脂":
@@ -71,8 +76,63 @@ public class FitnessPlanService {
                 plan.setDescription("维持当前体型，保持健康状态");
                 plan.setPlanContent(generateMaintenancePlan(user));
         }
-        
+
         return fitnessPlanRepository.save(plan);
+    }
+
+    /**
+     * AI优化现有健身计划
+     */
+    public FitnessPlan optimizePlan(Long planId, Long userId, String newGoal, Double bodyFat, Double bmi) {
+        // 获取现有计划
+        FitnessPlan existingPlan = fitnessPlanRepository.findById(planId)
+                .orElseThrow(() -> new RuntimeException("计划不存在"));
+
+        // 验证用户权限
+        if (!existingPlan.getUserId().equals(userId)) {
+            throw new RuntimeException("无权限修改此计划");
+        }
+
+        // 获取用户信息
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+
+        // 更新计划目标和相关属性
+        existingPlan.setGoal(newGoal);
+        existingPlan.setIsAiGenerated(true);
+
+        // 根据新目标重新生成计划内容
+        switch (newGoal) {
+            case "减脂":
+                existingPlan.setPlanName("AI智能减脂计划（已优化）");
+                existingPlan.setDifficulty(bodyFat > 25 ? "初级" : "中级");
+                existingPlan.setDuration(12);
+                existingPlan.setDescription("专为减脂目标定制的科学训练计划，结合有氧和力量训练");
+                existingPlan.setPlanContent(generateFatLossPlan(user, bodyFat));
+                break;
+            case "增肌":
+                existingPlan.setPlanName("AI智能增肌计划（已优化）");
+                existingPlan.setDifficulty(bmi < 20 ? "初级" : "中级");
+                existingPlan.setDuration(16);
+                existingPlan.setDescription("系统化增肌训练，注重肌肉围度和力量提升");
+                existingPlan.setPlanContent(generateMuscleBuildingPlan(user, bmi));
+                break;
+            case "塑形":
+                existingPlan.setPlanName("AI智能塑形计划（已优化）");
+                existingPlan.setDifficulty("中级");
+                existingPlan.setDuration(12);
+                existingPlan.setDescription("改善身体线条，打造理想体型");
+                existingPlan.setPlanContent(generateShapingPlan(user));
+                break;
+            default:
+                existingPlan.setPlanName("AI智能保持计划（已优化）");
+                existingPlan.setDifficulty("初级");
+                existingPlan.setDuration(8);
+                existingPlan.setDescription("维持当前体型，保持健康状态");
+                existingPlan.setPlanContent(generateMaintenancePlan(user));
+        }
+
+        return fitnessPlanRepository.save(existingPlan);
     }
 
     private String generateFatLossPlan(User user, Double bodyFat) {

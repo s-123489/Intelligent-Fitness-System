@@ -43,6 +43,18 @@ public class TrainingRecordController {
         return ResponseEntity.ok(ApiResponse.success("添加成功", saved));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<TrainingRecord>> updateRecord(@PathVariable Long id,
+                                                                      @RequestBody TrainingRecord record,
+                                                                      Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getPrincipal().toString());
+        record.setId(id);
+        record.setUserId(userId);
+
+        TrainingRecord updated = trainingRecordService.updateRecord(record);
+        return ResponseEntity.ok(ApiResponse.success("更新成功", updated));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteRecord(@PathVariable Long id) {
         trainingRecordService.deleteRecord(id);

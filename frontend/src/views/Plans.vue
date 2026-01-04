@@ -5,6 +5,10 @@
         <el-icon><MagicStick /></el-icon>
         AI生成健身计划
       </el-button>
+      <el-button type="success" @click="showCreateDialog = true" style="margin-left: 10px">
+        <el-icon><Edit /></el-icon>
+        自定义创建计划
+      </el-button>
     </el-card>
 
     <el-row :gutter="20">
@@ -64,6 +68,66 @@
       </template>
     </el-dialog>
 
+    <!-- 自定义创建计划对话框 -->
+    <el-dialog
+      v-model="showCreateDialog"
+      title="自定义创建健身计划"
+      width="600px"
+    >
+      <el-form :model="createForm" :rules="createRules" ref="createFormRef" label-width="100px">
+        <el-form-item label="计划名称" prop="planName">
+          <el-input v-model="createForm.planName" placeholder="请输入计划名称" />
+        </el-form-item>
+
+        <el-form-item label="健身目标" prop="goal">
+          <el-select v-model="createForm.goal" placeholder="请选择健身目标" style="width: 100%">
+            <el-option label="减脂" value="减脂" />
+            <el-option label="增肌" value="增肌" />
+            <el-option label="塑形" value="塑形" />
+            <el-option label="保持" value="保持" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="难度等级" prop="difficulty">
+          <el-select v-model="createForm.difficulty" placeholder="请选择难度等级" style="width: 100%">
+            <el-option label="简单" value="简单" />
+            <el-option label="中等" value="中等" />
+            <el-option label="困难" value="困难" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="训练周期" prop="duration">
+          <el-input-number v-model="createForm.duration" :min="1" :max="52" style="width: 100%" />
+          <span style="margin-left: 10px">周</span>
+        </el-form-item>
+
+        <el-form-item label="计划描述" prop="description">
+          <el-input
+            v-model="createForm.description"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入计划描述"
+          />
+        </el-form-item>
+
+        <el-form-item label="训练内容" prop="planContent">
+          <el-input
+            v-model="createForm.planContent"
+            type="textarea"
+            :rows="6"
+            placeholder="请输入详细的训练内容，例如：&#10;第1-4周：&#10;周一：胸部训练 - 卧推 4组x12次&#10;周三：背部训练 - 引体向上 4组x10次&#10;周五：腿部训练 - 深蹲 4组x15次"
+          />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="handleCancelCreate">取消</el-button>
+        <el-button type="primary" @click="handleCreatePlan" :loading="creating">
+          创建计划
+        </el-button>
+      </template>
+    </el-dialog>
+
     <!-- 计划详情对话框 -->
     <el-dialog
       v-model="showDetailDialog"
@@ -93,25 +157,103 @@
           <el-table-column prop="frequency" label="频率" />
           <el-table-column prop="calories" label="消耗卡路里" />
         </el-table>
+
+        <el-divider />
+
+        <el-button type="warning" @click="handleOptimizePlan" style="width: 100%">
+          <el-icon><Magic /></el-icon>
+          AI优化此计划
+        </el-button>
       </div>
+    </el-dialog>
+
+    <!-- AI优化计划对话框 -->
+    <el-dialog
+      v-model="showOptimizeDialog"
+      title="AI优化健身计划"
+      width="500px"
+    >
+      <el-alert
+        title="提示"
+        type="info"
+        description="AI将根据新的训练目标重新优化您的计划内容"
+        :closable="false"
+        style="margin-bottom: 20px"
+      />
+      <el-form :model="optimizeForm" label-width="100px">
+        <el-form-item label="新训练目标">
+          <el-select v-model="optimizeForm.goal" placeholder="请选择新的训练目标" style="width: 100%">
+            <el-option label="减脂" value="减脂" />
+            <el-option label="增肌" value="增肌" />
+            <el-option label="塑形" value="塑形" />
+            <el-option label="保持" value="保持" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="showOptimizeDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleConfirmOptimize" :loading="optimizing">
+          开始优化
+        </el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import { generateFitnessPlan, getFitnessPlans, getPlanDetail } from '@/api'
+import { generateFitnessPlan, createFitnessPlan, optimizeFitnessPlan, getFitnessPlans, getPlanDetail } from '@/api'
 
 const plans = ref([])
 const showGenerateDialog = ref(false)
+const showCreateDialog = ref(false)
 const showDetailDialog = ref(false)
+const showOptimizeDialog = ref(false)
 const generating = ref(false)
+const creating = ref(false)
+const optimizing = ref(false)
 const currentPlan = ref({})
+const createFormRef = ref(null)
 
 const generateForm = ref({
   goal: ''
 })
+
+const optimizeForm = reactive({
+  goal: ''
+})
+
+const createForm = reactive({
+  planName: '',
+  goal: '',
+  difficulty: '',
+  duration: 8,
+  description: '',
+  planContent: ''
+})
+
+const createRules = {
+  planName: [
+    { required: true, message: '请输入计划名称', trigger: 'blur' }
+  ],
+  goal: [
+    { required: true, message: '请选择健身目标', trigger: 'change' }
+  ],
+  difficulty: [
+    { required: true, message: '请选择难度等级', trigger: 'change' }
+  ],
+  duration: [
+    { required: true, message: '请输入训练周期', trigger: 'blur' }
+  ],
+  description: [
+    { required: true, message: '请输入计划描述', trigger: 'blur' }
+  ],
+  planContent: [
+    { required: true, message: '请输入训练内容', trigger: 'blur' }
+  ]
+}
 
 const loadPlans = async () => {
   try {
@@ -142,6 +284,45 @@ const generatePlan = async () => {
   }
 }
 
+const handleCancelCreate = () => {
+  showCreateDialog.value = false
+  resetCreateForm()
+}
+
+const resetCreateForm = () => {
+  createForm.planName = ''
+  createForm.goal = ''
+  createForm.difficulty = ''
+  createForm.duration = 8
+  createForm.description = ''
+  createForm.planContent = ''
+}
+
+const handleCreatePlan = async () => {
+  try {
+    await createFormRef.value.validate()
+    creating.value = true
+
+    await createFitnessPlan({
+      plan_name: createForm.planName,
+      goal: createForm.goal,
+      difficulty: createForm.difficulty,
+      duration: createForm.duration,
+      description: createForm.description,
+      plan_content: createForm.planContent
+    })
+
+    ElMessage.success('计划创建成功')
+    showCreateDialog.value = false
+    resetCreateForm()
+    loadPlans()
+  } catch (error) {
+    console.error(error)
+  } finally {
+    creating.value = false
+  }
+}
+
 const viewPlanDetail = async (planId) => {
   try {
     const res = await getPlanDetail(planId)
@@ -149,6 +330,33 @@ const viewPlanDetail = async (planId) => {
     showDetailDialog.value = true
   } catch (error) {
     console.error(error)
+  }
+}
+
+const handleOptimizePlan = () => {
+  optimizeForm.goal = currentPlan.value.goal || ''
+  showOptimizeDialog.value = true
+}
+
+const handleConfirmOptimize = async () => {
+  if (!optimizeForm.goal) {
+    ElMessage.warning('请选择新的训练目标')
+    return
+  }
+
+  try {
+    optimizing.value = true
+    await optimizeFitnessPlan(currentPlan.value.id, {
+      goal: optimizeForm.goal
+    })
+    ElMessage.success('计划优化成功')
+    showOptimizeDialog.value = false
+    showDetailDialog.value = false
+    loadPlans()
+  } catch (error) {
+    console.error(error)
+  } finally {
+    optimizing.value = false
   }
 }
 

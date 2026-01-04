@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: fitness-system
+
+  # 数据源配置 - 生产环境
+  datasource:
+    # 使用H2文件数据库（数据持久化）
+    url: jdbc:h2:file:/var/lib/fitness/data/fitnessdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+    # 如果要使用MySQL，取消下面的注释并注释掉H2配置
+    # url: jdbc:mysql://localhost:3306/fitness?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    # driver-class-name: com.mysql.cj.jdbc.Driver
+    # username: root
+    # password: your_password
+
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false  # 生产环境关闭SQL日志
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.H2Dialect
+        # 如果使用MySQL，使用这个dialect
+        # dialect: org.hibernate.dialect.MySQL8Dialect
+
+  # H2控制台（生产环境建议关闭）
+  h2:
+    console:
+      enabled: false  # 生产环境关闭H2控制台
+      path: /h2-console
+
+  # JSON配置
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+
+# 服务器配置
+server:
+  port: 5000
+  servlet:
+    context-path: /api
+
+# JWT配置 - 生产环境请务必修改secret
+jwt:
+  secret: ${JWT_SECRET:please-change-this-secret-key-in-production-environment-at-least-256-bits-long}
+  expiration: 604800000 # 7天（毫秒）
+
+# 日志配置 - 生产环境
+logging:
+  level:
+    root: INFO
+    com.fitness: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  file:
+    name: /var/log/fitness/application.log
+    max-size: 10MB
+    max-history: 30

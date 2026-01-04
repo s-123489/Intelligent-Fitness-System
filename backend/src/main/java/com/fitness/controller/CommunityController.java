@@ -1,6 +1,8 @@
 package com.fitness.controller;
 
 import com.fitness.dto.ApiResponse;
+import com.fitness.dto.CommentDTO;
+import com.fitness.dto.PostDTO;
 import com.fitness.entity.CommunityPost;
 import com.fitness.entity.PostComment;
 import com.fitness.service.CommunityService;
@@ -10,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/community")
@@ -19,8 +22,9 @@ public class CommunityController {
     private CommunityService communityService;
 
     @GetMapping("/posts")
-    public ResponseEntity<List<CommunityPost>> getPosts() {
-        List<CommunityPost> posts = communityService.getAllPosts();
+    public ResponseEntity<List<PostDTO>> getPosts(Authentication authentication) {
+        Long userId = authentication != null ? Long.parseLong(authentication.getPrincipal().toString()) : null;
+        List<PostDTO> posts = communityService.getAllPosts(userId);
         return ResponseEntity.ok(posts);
     }
 
@@ -36,9 +40,11 @@ public class CommunityController {
     }
 
     @PostMapping("/posts/{postId}/like")
-    public ResponseEntity<ApiResponse<CommunityPost>> likePost(@PathVariable Long postId) {
-        CommunityPost post = communityService.likePost(postId);
-        return ResponseEntity.ok(ApiResponse.success("点赞成功", post));
+    public ResponseEntity<Map<String, Object>> likePost(@PathVariable Long postId,
+                                                          Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getPrincipal().toString());
+        Map<String, Object> result = communityService.toggleLike(postId, userId);
+        return ResponseEntity.ok(result);
     }
 
     @DeleteMapping("/posts/{id}")
@@ -48,8 +54,8 @@ public class CommunityController {
     }
 
     @GetMapping("/posts/{postId}/comments")
-    public ResponseEntity<List<PostComment>> getComments(@PathVariable Long postId) {
-        List<PostComment> comments = communityService.getComments(postId);
+    public ResponseEntity<List<CommentDTO>> getComments(@PathVariable Long postId) {
+        List<CommentDTO> comments = communityService.getComments(postId);
         return ResponseEntity.ok(comments);
     }
 

@@ -93,14 +93,6 @@
               </div>
             </el-form-item>
           </el-form>
-
-          <div class="demo-account">
-            <el-divider>测试账户</el-divider>
-            <div class="demo-info">
-              <el-icon><InfoFilled /></el-icon>
-              <span>用户名: <code>testuser</code> | 密码: <code>123456</code></span>
-            </div>
-          </div>
         </el-card>
       </div>
     </div>
@@ -400,32 +392,6 @@ const handleLogin = async () => {
 .link-text {
   font-weight: bold;
   font-size: 14px;
-}
-
-.demo-account {
-  margin-top: 20px;
-  padding-top: 20px;
-}
-
-.demo-info {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px;
-  background: #f0f9ff;
-  border-radius: 8px;
-  color: #606266;
-  font-size: 13px;
-}
-
-.demo-info code {
-  padding: 2px 6px;
-  background: #e1f3ff;
-  border-radius: 4px;
-  color: #409eff;
-  font-family: 'Courier New', monospace;
-  font-weight: bold;
 }
 
 @media (max-width: 1024px) {

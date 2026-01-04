@@ -29,6 +29,10 @@ public class TrainingRecordService {
         return trainingRecordRepository.save(record);
     }
 
+    public TrainingRecord updateRecord(TrainingRecord record) {
+        return trainingRecordRepository.save(record);
+    }
+
     public void deleteRecord(Long id) {
         trainingRecordRepository.deleteById(id);
     }

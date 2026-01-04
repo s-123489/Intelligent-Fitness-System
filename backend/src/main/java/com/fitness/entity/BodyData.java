@@ -1,6 +1,7 @@
 package com.fitness.entity;
 
 import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,14 +23,17 @@ public class BodyData {
     private Long id;
 
     @Column(nullable = false)
+    @JsonProperty("user_id")
     private Long userId;
 
     private Double weight;
 
+    @JsonProperty("body_fat")
     private Double bodyFat;
 
     private Double bmi;
 
     @Column(nullable = false)
+    @JsonProperty("record_date")
     private LocalDate recordDate;
 }

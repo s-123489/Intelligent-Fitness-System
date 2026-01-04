@@ -25,6 +25,12 @@ public class FitnessPlanController {
         return ResponseEntity.ok(plans);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<FitnessPlan> getPlanDetail(@PathVariable Long id) {
+        FitnessPlan plan = fitnessPlanService.getPlanById(id);
+        return ResponseEntity.ok(plan);
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<FitnessPlan>> addPlan(@RequestBody FitnessPlan plan,
                                                               Authentication authentication) {
@@ -41,13 +47,28 @@ public class FitnessPlanController {
                                                                    Authentication authentication) {
         Long userId = Long.parseLong(authentication.getPrincipal().toString());
         String goal = (String) request.get("goal");
-        Double bodyFat = request.get("bodyFat") != null ? 
+        Double bodyFat = request.get("bodyFat") != null ?
                          Double.parseDouble(request.get("bodyFat").toString()) : 20.0;
-        Double bmi = request.get("bmi") != null ? 
+        Double bmi = request.get("bmi") != null ?
                      Double.parseDouble(request.get("bmi").toString()) : 22.0;
-        
+
         FitnessPlan plan = fitnessPlanService.generateAIPlan(userId, goal, bodyFat, bmi);
         return ResponseEntity.ok(ApiResponse.success("AI计划生成成功", plan));
+    }
+
+    @PutMapping("/{id}/optimize")
+    public ResponseEntity<ApiResponse<FitnessPlan>> optimizePlan(@PathVariable Long id,
+                                                                   @RequestBody Map<String, Object> request,
+                                                                   Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getPrincipal().toString());
+        String newGoal = (String) request.get("goal");
+        Double bodyFat = request.get("bodyFat") != null ?
+                         Double.parseDouble(request.get("bodyFat").toString()) : 20.0;
+        Double bmi = request.get("bmi") != null ?
+                     Double.parseDouble(request.get("bmi").toString()) : 22.0;
+
+        FitnessPlan optimizedPlan = fitnessPlanService.optimizePlan(id, userId, newGoal, bodyFat, bmi);
+        return ResponseEntity.ok(ApiResponse.success("计划优化成功", optimizedPlan));
     }
 
     @DeleteMapping("/{id}")

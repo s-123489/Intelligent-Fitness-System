@@ -1,11 +1,15 @@
 <template>
   <div class="community">
-    <el-card style="margin-bottom: 20px">
-      <el-button type="primary" @click="showPostDialog = true">
+    <div class="page-header">
+      <h2 class="page-title">
+        <el-icon><ChatDotRound /></el-icon>
+        健身社区
+      </h2>
+      <el-button type="primary" @click="showPostDialog = true" class="add-btn">
         <el-icon><EditPen /></el-icon>
         发布动态
       </el-button>
-    </el-card>
+    </div>
 
     <el-row :gutter="20">
       <el-col :span="24" v-for="post in posts" :key="post.id">
@@ -13,12 +17,18 @@
           <template #header>
             <div class="post-header">
               <div class="user-info">
-                <el-avatar :size="40">
-                  <el-icon><User /></el-icon>
-                </el-avatar>
+                <div class="avatar-wrapper">
+                  <el-avatar :size="48" class="user-avatar">
+                    <el-icon><User /></el-icon>
+                  </el-avatar>
+                  <div class="online-indicator"></div>
+                </div>
                 <div class="user-detail">
                   <div class="username">{{ post.username }}</div>
-                  <div class="post-time">{{ formatTime(post.created_at) }}</div>
+                  <div class="post-time">
+                    <el-icon><Clock /></el-icon>
+                    {{ formatTime(post.created_at) }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -286,14 +296,91 @@ onMounted(() => {
 <style scoped>
 .community {
   width: 100%;
+  animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.25);
+}
+
+.page-title {
+  margin: 0;
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-title .el-icon {
+  font-size: 32px;
+}
+
+.add-btn {
+  background: white !important;
+  color: #667eea !important;
+  border: none !important;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 .post-card {
-  transition: all 0.3s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+.post-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.3s ease;
+}
+
+.post-card:hover::before {
+  transform: scaleY(1);
 }
 
 .post-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 28px rgba(102, 126, 234, 0.2);
+  transform: translateY(-4px);
 }
 
 .post-header {
@@ -305,27 +392,56 @@ onMounted(() => {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+}
+
+.avatar-wrapper {
+  position: relative;
+}
+
+.user-avatar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.online-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  background: #67c23a;
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .user-detail {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
 .username {
-  font-weight: bold;
+  font-weight: 700;
   color: #303133;
+  font-size: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .post-time {
-  font-size: 12px;
+  font-size: 13px;
   color: #909399;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .post-content {
-  padding: 10px 0;
+  padding: 16px 0;
 }
 
 .post-content p {
@@ -333,20 +449,33 @@ onMounted(() => {
   line-height: 1.8;
   color: #606266;
   white-space: pre-wrap;
+  font-size: 15px;
 }
 
 .post-actions {
   display: flex;
   gap: 20px;
-  padding-top: 15px;
-  border-top: 1px solid #ebeef5;
+  padding-top: 16px;
+  border-top: 2px solid #f5f7fa;
+}
+
+.post-actions :deep(.el-button) {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.post-actions :deep(.el-button:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .comment-post-content {
-  padding: 15px;
-  background: #f5f7fa;
-  border-radius: 8px;
-  margin-bottom: 15px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border-left: 4px solid #667eea;
 }
 
 .comment-post-content p {
@@ -363,26 +492,30 @@ onMounted(() => {
 
 .no-comments {
   text-align: center;
-  padding: 20px;
+  padding: 30px;
 }
 
 .comment-item {
-  padding: 15px;
-  margin-bottom: 10px;
-  background: #fafafa;
-  border-radius: 8px;
-  transition: all 0.3s;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
 }
 
 .comment-item:hover {
-  background: #f0f0f0;
+  background: linear-gradient(135deg, #f0f0f0 0%, #fafafa 100%);
+  border-left-color: #667eea;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .comment-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .comment-info {
@@ -390,10 +523,10 @@ onMounted(() => {
 }
 
 .comment-username {
-  font-weight: bold;
+  font-weight: 700;
   font-size: 14px;
   color: #303133;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .comment-time {
@@ -402,13 +535,35 @@ onMounted(() => {
 }
 
 .comment-content {
-  padding-left: 40px;
+  padding-left: 42px;
   line-height: 1.6;
   color: #606266;
 }
 
 .add-comment {
-  padding-top: 15px;
-  border-top: 1px solid #ebeef5;
+  padding-top: 20px;
+  border-top: 2px solid #f5f7fa;
+}
+
+:deep(.el-card) {
+  border-radius: 16px;
+  border: none;
+}
+
+:deep(.el-dialog) {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+:deep(.el-dialog__header) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px;
+}
+
+:deep(.el-dialog__title) {
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
 }
 </style>

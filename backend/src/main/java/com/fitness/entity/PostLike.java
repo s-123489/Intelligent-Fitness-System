@@ -1,6 +1,7 @@
 package com.fitness.entity;
 
 import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,12 +28,15 @@ public class PostLike {
     private Long id;
 
     @Column(nullable = false, name = "user_id")
+    @JsonProperty("user_id")
     private Long userId;
 
     @Column(nullable = false, name = "post_id")
+    @JsonProperty("post_id")
     private Long postId;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
+    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 }

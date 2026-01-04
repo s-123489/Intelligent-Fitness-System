@@ -1,43 +1,73 @@
 <template>
   <div class="body-data">
-    <el-card style="margin-bottom: 20px">
-      <el-button type="primary" @click="showAddDialog = true">
+    <div class="page-header">
+      <h2 class="page-title">
+        <el-icon><DataLine /></el-icon>
+        身体数据
+      </h2>
+      <el-button type="primary" @click="showAddDialog = true" class="add-btn">
         <el-icon><CirclePlus /></el-icon>
         添加身体数据
       </el-button>
-    </el-card>
+    </div>
 
     <el-row :gutter="20">
       <el-col :span="16">
-        <el-card>
+        <el-card class="chart-card">
           <template #header>
-            <span>体重变化趋势</span>
+            <div class="card-title">
+              <el-icon><TrendCharts /></el-icon>
+              <span>体重变化趋势</span>
+            </div>
           </template>
           <div ref="weightChartRef" style="height: 400px"></div>
         </el-card>
       </el-col>
 
       <el-col :span="8">
-        <el-card>
+        <el-card class="latest-card">
           <template #header>
-            <span>最新数据</span>
+            <div class="card-title">
+              <el-icon><DocumentCopy /></el-icon>
+              <span>最新数据</span>
+            </div>
           </template>
           <div class="latest-data" v-if="bodyData.length > 0">
-            <div class="data-item">
-              <div class="data-label">体重</div>
-              <div class="data-value">{{ bodyData[0].weight }} kg</div>
+            <div class="data-item weight-item">
+              <div class="data-icon">
+                <el-icon><Scale /></el-icon>
+              </div>
+              <div class="data-content">
+                <div class="data-label">体重</div>
+                <div class="data-value">{{ bodyData[0].weight }} <span class="unit">kg</span></div>
+              </div>
             </div>
-            <div class="data-item">
-              <div class="data-label">体脂率</div>
-              <div class="data-value">{{ bodyData[0].body_fat }}%</div>
+            <div class="data-item fat-item">
+              <div class="data-icon">
+                <el-icon><TrendCharts /></el-icon>
+              </div>
+              <div class="data-content">
+                <div class="data-label">体脂率</div>
+                <div class="data-value">{{ bodyData[0].body_fat }}<span class="unit">%</span></div>
+              </div>
             </div>
-            <div class="data-item">
-              <div class="data-label">BMI</div>
-              <div class="data-value">{{ bodyData[0].bmi }}</div>
+            <div class="data-item bmi-item">
+              <div class="data-icon">
+                <el-icon><DataLine /></el-icon>
+              </div>
+              <div class="data-content">
+                <div class="data-label">BMI指数</div>
+                <div class="data-value">{{ bodyData[0].bmi }}</div>
+              </div>
             </div>
-            <div class="data-item">
-              <div class="data-label">记录日期</div>
-              <div class="data-value">{{ bodyData[0].record_date }}</div>
+            <div class="data-item date-item">
+              <div class="data-icon">
+                <el-icon><Calendar /></el-icon>
+              </div>
+              <div class="data-content">
+                <div class="data-label">记录日期</div>
+                <div class="data-value">{{ bodyData[0].record_date }}</div>
+              </div>
             </div>
           </div>
           <el-empty v-else description="暂无数据" />
@@ -45,9 +75,12 @@
       </el-col>
     </el-row>
 
-    <el-card style="margin-top: 20px">
+    <el-card class="history-card" style="margin-top: 20px">
       <template #header>
-        <span>历史记录</span>
+        <div class="card-title">
+          <el-icon><Document /></el-icon>
+          <span>历史记录</span>
+        </div>
       </template>
       <el-table :data="bodyData" style="width: 100%">
         <el-table-column prop="record_date" label="日期" width="120" sortable />
@@ -84,8 +117,12 @@
             :precision="1"
             :step="0.1"
             style="width: 100%"
+            placeholder="可不填，系统将自动计算"
           />
           <span style="margin-left: 10px">%</span>
+          <div style="color: #909399; font-size: 12px; margin-top: 5px;">
+            💡 提示：留空将根据您的性别、年龄、身高、体重自动计算体脂率
+          </div>
         </el-form-item>
 
         <el-form-item label="记录日期" prop="record_date">
@@ -123,17 +160,14 @@ const formRef = ref(null)
 const weightChartRef = ref(null)
 
 const form = reactive({
-  weight: 0,
-  body_fat: 0,
+  weight: null,
+  body_fat: null,
   record_date: new Date().toISOString().split('T')[0]
 })
 
 const rules = {
   weight: [
     { required: true, message: '请输入体重', trigger: 'blur' }
-  ],
-  body_fat: [
-    { required: true, message: '请输入体脂率', trigger: 'blur' }
   ],
   record_date: [
     { required: true, message: '请选择记录日期', trigger: 'change' }
@@ -218,12 +252,19 @@ const handleAdd = async () => {
     await formRef.value.validate()
     loading.value = true
 
-    await addBodyData(form)
-    ElMessage.success('添加成功')
+    const result = await addBodyData(form)
+
+    // 如果是自动计算的体脂率，显示提示
+    if (result.isAutoCalculated && result.bodyFat) {
+      ElMessage.success(`添加成功！体脂率自动计算为 ${result.bodyFat}%`)
+    } else {
+      ElMessage.success('添加成功')
+    }
+
     showAddDialog.value = false
 
-    form.weight = 0
-    form.body_fat = 0
+    form.weight = null
+    form.body_fat = null
     form.record_date = new Date().toISOString().split('T')[0]
 
     loadBodyData()

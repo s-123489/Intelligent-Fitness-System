@@ -45,7 +45,7 @@
           <el-button type="primary" @click="handleUpdate" :loading="loading">
             保存修改
           </el-button>
-          <el-button @click="loadProfile">
+          <el-button @click="handleReset">
             重置
           </el-button>
         </el-form-item>
@@ -68,19 +68,72 @@
           {{ form.email || '未设置' }}
         </el-descriptions-item>
       </el-descriptions>
+
+      <el-divider />
+
+      <el-button type="warning" @click="showPasswordDialog = true" style="width: 100%">
+        <el-icon><Lock /></el-icon>
+        修改密码
+      </el-button>
     </el-card>
+
+    <!-- 修改密码对话框 -->
+    <el-dialog
+      v-model="showPasswordDialog"
+      title="修改密码"
+      width="500px"
+    >
+      <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-width="100px">
+        <el-form-item label="旧密码" prop="oldPassword">
+          <el-input
+            v-model="passwordForm.oldPassword"
+            type="password"
+            placeholder="请输入旧密码"
+            show-password
+          />
+        </el-form-item>
+
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input
+            v-model="passwordForm.newPassword"
+            type="password"
+            placeholder="请输入新密码（至少6位）"
+            show-password
+          />
+        </el-form-item>
+
+        <el-form-item label="确认密码" prop="confirmPassword">
+          <el-input
+            v-model="passwordForm.confirmPassword"
+            type="password"
+            placeholder="请再次输入新密码"
+            show-password
+          />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="handleCancelPassword">取消</el-button>
+        <el-button type="primary" @click="handleChangePassword" :loading="passwordLoading">
+          确定修改
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getProfile, updateProfile } from '@/api'
+import { getProfile, updateProfile, changePassword } from '@/api'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 const formRef = ref(null)
+const passwordFormRef = ref(null)
 const loading = ref(false)
+const passwordLoading = ref(false)
+const showPasswordDialog = ref(false)
 
 const form = reactive({
   username: '',
@@ -89,6 +142,20 @@ const form = reactive({
   age: null,
   height: null
 })
+
+const passwordForm = reactive({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
+
+const validatePasswordMatch = (rule, value, callback) => {
+  if (value !== passwordForm.newPassword) {
+    callback(new Error('两次输入的密码不一致'))
+  } else {
+    callback()
+  }
+}
 
 const rules = {
   email: [
@@ -99,6 +166,20 @@ const rules = {
   ],
   height: [
     { type: 'number', message: '请输入身高', trigger: 'blur' }
+  ]
+}
+
+const passwordRules = {
+  oldPassword: [
+    { required: true, message: '请输入旧密码', trigger: 'blur' }
+  ],
+  newPassword: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, message: '请再次输入新密码', trigger: 'blur' },
+    { validator: validatePasswordMatch, trigger: 'blur' }
   ]
 }
 
@@ -133,6 +214,57 @@ const handleUpdate = async () => {
     console.error(error)
   } finally {
     loading.value = false
+  }
+}
+
+const handleReset = () => {
+  form.email = ''
+  form.gender = ''
+  form.age = null
+  form.height = null
+  if (formRef.value) {
+    formRef.value.clearValidate()
+  }
+  ElMessage.success('已清空表单')
+}
+
+const handleCancelPassword = () => {
+  showPasswordDialog.value = false
+  resetPasswordForm()
+}
+
+const resetPasswordForm = () => {
+  passwordForm.oldPassword = ''
+  passwordForm.newPassword = ''
+  passwordForm.confirmPassword = ''
+  if (passwordFormRef.value) {
+    passwordFormRef.value.clearValidate()
+  }
+}
+
+const handleChangePassword = async () => {
+  try {
+    await passwordFormRef.value.validate()
+    passwordLoading.value = true
+
+    await changePassword({
+      oldPassword: passwordForm.oldPassword,
+      newPassword: passwordForm.newPassword
+    })
+
+    ElMessage.success('密码修改成功，请重新登录')
+    showPasswordDialog.value = false
+    resetPasswordForm()
+
+    // 延迟跳转到登录页
+    setTimeout(() => {
+      userStore.logout()
+      window.location.href = '/login'
+    }, 1500)
+  } catch (error) {
+    console.error(error)
+  } finally {
+    passwordLoading.value = false
   }
 }
 
